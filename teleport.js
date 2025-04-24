@@ -11,9 +11,9 @@
                 - causing GM layer creatures to appear with pings and effects
                 - anything else you can think of for the tools this provides. 
         */
-        let version = "1.2.3",  // eslint-disable-line no-unused-vars
+        let version = "1.2.4",  // eslint-disable-line no-unused-vars
             author = "616652/Patrick K.",   // eslint-disable-line no-unused-vars
-            lastModified = 1608834349;  // eslint-disable-line no-unused-vars
+            lastModified = 1745466027;  // eslint-disable-line no-unused-vars
         // State variables are carried over between sessions, 
         // so a user does not have to re-set configuration items every time a game starts
         state.teleport = state.teleport || {};
