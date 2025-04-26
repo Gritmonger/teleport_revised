@@ -11,9 +11,9 @@
                 - causing GM layer creatures to appear with pings and effects
                 - anything else you can think of for the tools this provides. 
         */
-        let version = "1.2.4",  // eslint-disable-line no-unused-vars
+        let version = "1.2.3",  // eslint-disable-line no-unused-vars
             author = "616652/Patrick K.",   // eslint-disable-line no-unused-vars
-            lastModified = 1745466027;  // eslint-disable-line no-unused-vars
+            lastModified = 1608834349;  // eslint-disable-line no-unused-vars
         // State variables are carried over between sessions, 
         // so a user does not have to re-set configuration items every time a game starts
         state.teleport = state.teleport || {};
@@ -640,6 +640,9 @@
         */
         limboSwap = function(obj, pageid){
             let foundPlayerObj;
+            if(obj.get("represents") === ""){
+                return false;
+            }
             /*let destPageLimbo = indexLimbo(pageid);
             try{
                 if(destPageLimbo){
@@ -669,6 +672,9 @@
             // No limbo or object not found in limbo... so we try and get the object from the page in general
             let destPageTokenSet = findObjs({ type:"graphic", _pageid:pageid });
             _.each( destPageTokenSet, function(pageobj){
+               if(pageobj.get("represents") === ""){
+                   return true;
+               }
                if(obj.get("represents") === pageobj.get("represents")){
                    foundPlayerObj = pageobj;
                    sendToLimbo(obj);
@@ -683,6 +689,7 @@
                         sendToLimbo(obj);
                     }
                }catch(err){
+                   log("createCopy:" + err);
                     try{
                         let props = JSON.parse(JSON.stringify(obj));
                         delete props._id;
@@ -697,7 +704,10 @@
                             foundPlayerObj = newToken;
                             sendToLimbo(obj);
                         }
-                    }catch(err){} 
+                    }catch(err){
+                        log("createObj:" + err)
+                    } 
+               //log(err);
                }
             }
             
