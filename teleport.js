@@ -614,73 +614,36 @@
             return tokenList;
         },
         sendToLimbo = function(obj){
-            //state.teleport.limbo[obj.get("_pageid")] = state.teleport.limbo[obj.get("_pageid")]||[];
-            //if( _.indexOf(state.teleport.limbo[obj.get("_pageid")], obj.get("_id")) === -1 ){
-            //    state.teleport.limbo[obj.get("_pageid")].push(obj.get("_id"));
-            //}
             obj.set({
                 layer:"gmlayer",
                 left: 35,
                 top: 35
             });
-        }, /*
-        getFromLimbo = function(obj){
-            //state.teleport.limbo[obj.get("_pageid")] = state.teleport.limbo[obj.get("_pageid")]||[];
-            //if( _.indexOf(state.teleport.limbo[obj.get("_pageid")], obj.get("_id")) !== -1 ){
-            //    state.teleport.limbo[obj.get("_pageid")] = _.without(state.teleport.limbo[obj.get("_pageid")],obj.get("_id"));
-            //}
-            // obj.set("layer","objects");
         },
-        indexLimbo = function(pageid){
-            return state.teleport.limbo[pageid];
-        },
-        indexAllLimbo = function(){
-            return state.teleport.limbo;
-        },
-        */
+       
         limboSwap = function(obj, pageid){
             let foundPlayerObj;
-            if(obj.get("represents") === ""){
+            // If the token has *no associated character sheet, stop and reject*
+            // We are going to try a *new* method of checking to see if a named object exists on the associated page, so 
+            // uniquely named graphics can still teleport. But unnamed or not-uniquely named sheet-less graphics cannot teleport. 
+            if(obj.get("represents") === "" && obj.get("name") === ""){
                 return false;
             }
-            /*let destPageLimbo = indexLimbo(pageid);
-            try{
-                if(destPageLimbo){
-                    _.each( destPageLimbo , function(objid){
-                        let limbobj = getObj("graphic",objid);
-                        let limbrep;
-                        if(limbobj){
-                            limbrep = limbobj.get("represents");
-                        }
-                        if(limbrep && limbrep === obj.get("represents")){
-                            sendToLimbo(obj);
-                            getFromLimbo(limbobj);
-                            foundPlayerObj = limbobj;
-                        }
-                            if(typeof foundPlayerObj !== "null"){ return false }
-                    });
-                }
-                if(foundPlayerObj !== null){
-                    reconcileTargetPageId(playerControllers(foundPlayerObj), pageid);
-                    return foundPlayerObj;
-                }
-                
-            }catch(err){
-               
-            }
-            */
-            // No limbo or object not found in limbo... so we try and get the object from the page in general
+            
+            
+            // we check to see if in a list of objects there is an associated object that shares the same character sheet
             let destPageTokenSet = findObjs({ type:"graphic", _pageid:pageid });
             _.each( destPageTokenSet, function(pageobj){
-               if(pageobj.get("represents") === ""){
-                   return true;
-               }
                if(obj.get("represents") === pageobj.get("represents")){
-                   foundPlayerObj = pageobj;
-                   sendToLimbo(obj);
-                   return false;
+                   if(obj.get("name") === pageobj.get("name")){
+                        foundPlayerObj = pageobj;
+                        sendToLimbo(obj);
+                        return false;
+                   }
                } 
             });
+            
+            // We didn't find an object that matched on the target page, so we try two methods to create a new token - one new, one old
             if(!foundPlayerObj){
                 try{
                     let newToken = obj.createCopy({pageid:pageid});
@@ -689,7 +652,7 @@
                         sendToLimbo(obj);
                     }
                }catch(err){
-                   log("createCopy:" + err);
+                   //log("createCopy:" + err);
                     try{
                         let props = JSON.parse(JSON.stringify(obj));
                         delete props._id;
@@ -705,28 +668,18 @@
                             sendToLimbo(obj);
                         }
                     }catch(err){
-                        log("createObj:" + err)
+                        //log("createObj:" + err)
                     } 
-               //log(err);
                }
+            }else{
+                foundPlayerObj.set("statusmarkers", obj.get("statusmarkers"));
             }
-            
-               
-            
-            
-            
             
             if(foundPlayerObj){
                 reconcileTargetPageId(playerControllers(foundPlayerObj), pageid);
+                log(obj.get("statusmarkers"));
                 return foundPlayerObj;
             }
-              
-
-            // last ditch effort try and create the object on the local page
-            // check for "is this the experimental version?"
-            // <==   This is where create code goes
-            
-            // If attempt to create fails, log failure message
             
             return false;
         },
