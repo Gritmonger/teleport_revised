@@ -11,9 +11,9 @@
                 - causing GM layer creatures to appear with pings and effects
                 - anything else you can think of for the tools this provides. 
         */
-        let version = "1.2.3",  // eslint-disable-line no-unused-vars
+        let version = "1.2.4",  // eslint-disable-line no-unused-vars
             author = "616652/Patrick K.",   // eslint-disable-line no-unused-vars
-            lastModified = 1608834349;  // eslint-disable-line no-unused-vars
+            lastModified = 1745816192937;  // eslint-disable-line no-unused-vars
         // State variables are carried over between sessions, 
         // so a user does not have to re-set configuration items every time a game starts
         state.teleport = state.teleport || {};
@@ -626,6 +626,15 @@
             // If the token has *no associated character sheet, stop and reject*
             // We are going to try a *new* method of checking to see if a named object exists on the associated page, so 
             // uniquely named graphics can still teleport. But unnamed or not-uniquely named sheet-less graphics cannot teleport. 
+            // prevent teleport pads from being teleported
+            if(typeof obj.get("bar1_value") === "string"){
+                if(obj.get("bar1_value").indexOf("teleportpad") !== -1){
+                    //log("Tried to teleport a teleport pad");
+                    return false;
+                }
+            }
+              
+            
             if(obj.get("represents") === "" && obj.get("name") === ""){
                 return false;
             }
@@ -677,7 +686,7 @@
             
             if(foundPlayerObj){
                 reconcileTargetPageId(playerControllers(foundPlayerObj), pageid);
-                log(obj.get("statusmarkers"));
+                //log(obj.get("statusmarkers"));
                 return foundPlayerObj;
             }
             
@@ -808,7 +817,7 @@
             }
         },
         purgeTokenId = function(deletedpadid){
-            log(deletedpadid);
+            //log(deletedpadid);
             let outputtext = "";
             let completeList = globalTeleportPadList();
             let removedcount = 0;
@@ -890,7 +899,6 @@
             }
         },
         msgHandler = function(msg){
-            
             if(msg.type === "api" && msg.content.indexOf("!teleport") === 0 ){
                 
                 if(msg.content.indexOf("--help") !== -1){
@@ -1133,7 +1141,7 @@
             TOKENMARKERS = JSON.parse(Campaign().get("token_markers"));
             JUMPGATE = (['jumpgate'].includes(Campaign().get('release')))?true:false;
             TOKENCOPY = '';
-            log("JUMPGATE Status:"+JUMPGATE);
+            //log("JUMPGATE Status:"+JUMPGATE);
             let helpoutput = "";
             if(!state.teleport.help || !getObj("handout",state.teleport.help)){
                 if(findObjs({type:"handout",name:"Teleport API"})[0]){
