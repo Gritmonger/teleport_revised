@@ -1,3 +1,4 @@
+
     const Teleport = (() => {
 
         /*
@@ -230,6 +231,7 @@
                 let targettext = "";
                 if(pad.get("bar1_max") !==""){
                     let targetlist = pad.get("bar1_max");
+                    targetlist = arrayChecker(targetlist,"array");
                     if(Array.isArray(targetlist)){
                         let count = 0;
                         _.each(targetlist, function(targ){
@@ -289,6 +291,7 @@
                 
                         if(token.get("bar1_max") !== ""){
                             let targetlist = token.get("bar1_max");
+                            targetlist = arrayChecker(targetlist,"array");
                             if(Array.isArray(targetlist)){
                                 let count = 0;
                                 _.each(targetlist, function(targ){
@@ -350,6 +353,7 @@
             output = "";
             if(pad.get("bar1_max") !==""){
                 let targetlist = pad.get("bar1_max");
+                targetlist = arrayChecker(targetlist,"array");
                 if(Array.isArray(targetlist)){
                     let count = 0;
                     _.each(targetlist, function(targ){
@@ -467,6 +471,7 @@
             let returntext = "?{Select a Destination";
             if(pad.get("bar1_max") !==""){
                 let targetlist = pad.get("bar1_max");
+                targetlist = arrayChecker(targetlist,"array");
                 if(Array.isArray(targetlist)){
                     _.each(targetlist, function(targ){
                         if(!checkTokenMarkerMatch(obj,getObj("graphic",targ))){
@@ -521,6 +526,7 @@
                     }
                     teleportMsg(pad,obj);
                     let targetlist = pad.get("bar1_max");
+                    targetlist = arrayChecker(targetlist,"array");
                     if(Array.isArray(targetlist) && pad.get("fliph") === true && targetlist.length > 1){
                         teleportSelectList(obj,pad);
                         return;
@@ -553,6 +559,7 @@
                 return null; 
             }
             let targetlist = pad.get("bar1_max"),pickedpad,count=0;
+            targetlist = arrayChecker(targetlist,"array");
             if(Array.isArray(targetlist)){
                 let randnum = Math.floor(Math.random()*targetlist.length);
                 _.each(targetlist, function(targ){
@@ -826,13 +833,17 @@
                     _.each(pageTokenArray, function(token){
                         if(token.get("bar1_max") !== ""){
                             let targetlist = token.get("bar1_max");
+                            targetlist = arrayChecker(targetlist,"array");
                             if(Array.isArray(targetlist)){
                                 if(_.indexOf(targetlist,deletedpadid) !== -1){
-                                    token.set("bar1_max",_.without(targetlist,deletedpadid));
+                                    targetlist = _.without(targetlist,deletedpadid);
+                                    targetlist = arrayChecker(targetlist,"stringify");
+                                    token.set("bar1_max", targetlist);
                                     removedcount++;
                                 }
                             }else{
-                                if(targetlist === deletedpadid){
+                                targetlist = arrayChecker(targetlist,"array");
+                                if(_.indexof(targetlist,deletedpadid) !== -1){
                                     token.set("bar1_max","");
                                     removedcount++;
                                 }
@@ -848,10 +859,10 @@
         addPortalPadLink = function(pad, linktargetids, type){
             let completelinklist=[];
             if(type==="add"){
-                completelinklist = pad.get("bar1_max")||[];
+                completelinklist = arrayChecker(pad.get("bar1_max"),"array")||[];
             }
             if(!Array.isArray(completelinklist)){
-                completelinklist = [pad.get("bar1_max")];
+                completelinklist = arrayChecker(pad.get("bar1_max"),"array");
             }
             _.each(linktargetids, function(linktarg){
                 if(pad.get("_id") === linktarg._id){
@@ -867,7 +878,7 @@
                     outputToChat("A Link target for autoteleport needs to also be a teleport pad.");
                 }
             });
-            pad.set("bar1_max",completelinklist);
+            pad.set("bar1_max",arrayChecker(completelinklist,"stringify"));
         },
         editPadSFX = function(padid, sfx){
             let pad = getObj("graphic",padid);
@@ -1120,6 +1131,36 @@
                 return false;
             }
             return true;
+        },
+        // This is here to fix errors that accrued from trying to put a non-stringified array into a string-only field for tokens. 
+        // This function "fixes" arrays into either strings or arrays
+        arrayChecker = function(tokenarray, direction){
+            let returnarray;
+            if(direction==="stringify"){
+                if(Array.isArray(tokenarray)){
+                    returnarray = tokenarray
+                }else{
+                    if(tokenarray.indexOf(",") !== -1){
+                        returnarray = tokenarray.split(",");
+                    }else{
+                        returnarray = [];
+                        returnarray[0] = tokenarray;
+                    }
+                }
+                return JSON.stringify(returnarray);
+            }else{
+                try{
+                    returnarray = JSON.parse(tokenarray);
+                }catch(err){
+                    if(tokenarray.indexOf(",") !== -1){
+                        returnarray = tokenarray.split(",");
+                    }else{
+                        returnarray = [];
+                        returnarray[0] = tokenarray;
+                    }
+                }
+                return returnarray;
+            }
         },
         RegisterEventHandlers = function() {
             on("chat:message", msgHandler);
